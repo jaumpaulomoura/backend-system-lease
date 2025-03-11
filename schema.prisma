@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  name      String   @db.VarChar(63)
+  user      String   @db.VarChar(63)
+  email     String   @unique @db.VarChar(127)
+  password  String   @db.VarChar(127)
+  document  String?  @db.VarChar(63)
+  active    Boolean  @default(true)
+  role      Int      @default(1)
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime @default(now()) @db.Timestamp(0)
+
+  @@map("users")
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  categoria     String   @db.VarChar(63)
+  marca         String   @db.VarChar(63)
+  description   String?  @db.Text()
+  daily_value   Decimal? @db.Decimal(10, 2)
+  weekly_value  Decimal? @db.Decimal(10, 2)
+  monthly_value Decimal? @db.Decimal(10, 2)
+  annual_value  Decimal? @db.Decimal(10, 2)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime @default(now()) @db.Timestamp(0)
+  stock         Stock[] // Um produto pode ter vários registros de estoque
+
+  @@map("products")
+}
+
+model Stock {
+  id_patrimonio     Int     @id @default(autoincrement())
+  id_produto        Int
+  numero_patrimonio String  @db.VarChar(255)
+  nota_fiscal       String? @db.Text
+  valor_pago        Decimal @db.Decimal(10, 2)
+  status            String  @db.VarChar(50)
+  observacoes       String? @db.Text
+
+  produto Product @relation(fields: [id_produto], references: [id])
+
+  @@map("stock")
+}
+
+model Client {
+  id                   Int     @id @default(autoincrement())
+  nome                 String
+  cpf_cnpj             String  @unique
+  telefone             String
+  email                String  @unique
+  rua                  String
+  numero               String
+  complemento          String?
+  bairro               String
+  cidade               String
+  estado               String
+  cep                  String
+  rua_cobranca         String
+  numero_cobranca      String
+  complemento_cobranca String?
+  bairro_cobranca      String
+  cidade_cobranca      String
+  estado_cobranca      String
+  cep_cobranca         String
+  rua_locacao          String
+  numero_locacao       String
+  complemento_locacao  String?
+  bairro_locacao       String
+  cidade_locacao       String
+  estado_locacao       String
+  cep_locacao          String
+}
