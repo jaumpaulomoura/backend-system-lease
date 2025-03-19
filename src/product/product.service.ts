@@ -42,7 +42,7 @@ export class ProductService {
     });
   }
 
-  // Buscar produtos filtrados por nome
+  // Buscar produtos filtrados por name
   async getFilteredProducts(searchString: string): Promise<Product[]> {
     return this.prisma.product.findMany({
       where: {
@@ -62,7 +62,7 @@ export class ProductService {
     id: number,
     {
       active,
-      nome,
+      name,
       marca,
       description,
       daily_value,
@@ -76,7 +76,7 @@ export class ProductService {
     return this.prisma.product.update({
       data: {
         active,
-        nome,
+        name,
         marca,
         description,
         daily_value,
@@ -93,7 +93,7 @@ export class ProductService {
     id: number,
     {
       active,
-      nome,
+      name,
       marca,
       description,
       daily_value,
@@ -106,7 +106,7 @@ export class ProductService {
 
     const data: any = {};
 
-    if (nome) data.nome = nome;
+    if (name) data.name = name;
     if (marca) data.marca = marca;
     if (active !== undefined) data.active = active;
     if (description) data.description = description;

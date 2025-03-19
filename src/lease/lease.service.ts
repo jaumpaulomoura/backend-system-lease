@@ -146,7 +146,7 @@ export class LeaseService {
           },
           {
             cliente: {
-              nome: {
+              name: {
                 contains: searchString,
               },
             },

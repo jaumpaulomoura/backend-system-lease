@@ -11,7 +11,7 @@ import {
 export class CreateClientDTO {
   @IsNotEmpty()
   @IsString()
-  nome: string;
+  name: string;
 
   @IsNotEmpty()
   @IsString()

@@ -11,7 +11,7 @@ import {
 export class CreateProductDTO {
   @IsNotEmpty()
   @IsString()
-  nome: string;
+  name: string;
 
   @IsNotEmpty()
   @IsString()

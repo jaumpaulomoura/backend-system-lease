@@ -33,7 +33,7 @@ export class ClientService {
     return this.prisma.client.findMany({
       where: {
         OR: [
-          { nome: { contains: searchString } },
+          { name: { contains: searchString } },
           { cpf_cnpj: { contains: searchString } },
         ],
       },
@@ -44,7 +44,7 @@ export class ClientService {
   async update(
     id: number,
     {
-      nome,
+      name,
       cpf_cnpj,
       telefone,
       email,
@@ -67,7 +67,7 @@ export class ClientService {
     await this.exists(id);
     return this.prisma.client.update({
       data: {
-        nome,
+        name,
         cpf_cnpj,
         telefone,
         email,
