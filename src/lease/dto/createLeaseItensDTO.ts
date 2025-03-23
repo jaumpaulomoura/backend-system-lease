@@ -8,7 +8,7 @@ export class CreateLeaseItemDto {
 
   @IsNotEmpty()
   @IsInt()
-  id_patrimonio: number;
+  id: number;
 
   @IsNotEmpty()
   @IsNumber()

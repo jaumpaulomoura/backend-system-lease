@@ -42,19 +42,35 @@ export class ProductService {
     });
   }
 
-  // Buscar produtos filtrados por name
   async getFilteredProducts(searchString: string): Promise<Product[]> {
-    return this.prisma.product.findMany({
-      where: {
-        OR: [
-          {
-            marca: {
-              contains: searchString,
+    try {
+      const products = await this.prisma.product.findMany({
+        where: {
+          OR: [
+            {
+              id: {
+                // Se id for um número, você pode tentar buscar por igualdade
+                equals: parseInt(searchString), // Busca pelo id exato
+              },
             },
-          },
-        ],
-      },
-    });
+            {
+              name: {
+                contains: searchString,
+              },
+            },
+            {
+              marca: {
+                contains: searchString,
+              },
+            },
+          ],
+        },
+      });
+      return products;
+    } catch (error) {
+      console.error('Erro ao buscar produtos:', error);
+      throw new Error('Erro ao buscar produtos');
+    }
   }
 
   // Atualizar um produto (completamente)
@@ -121,10 +137,15 @@ export class ProductService {
     });
   }
 
-  // Deletar um produto
   async delete(id: number) {
-    await this.exists(id);
+    await this.exists(id); // Certifica-se de que o produto existe antes de deletar
 
+    // Exclui os registros de Stock que fazem referência ao Product
+    await this.prisma.stock.deleteMany({
+      where: { id_produto: id },
+    });
+
+    // Agora é seguro deletar o produto
     return this.prisma.product.delete({
       where: { id },
     });

@@ -5,14 +5,16 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
   Patch,
   Post,
   Put,
   UseGuards,
+  Param,
 } from '@nestjs/common';
 
 import { ParamId } from 'src/decorators/param-id.decorator';
+// import { Roles } from 'src/decorators/roles.decorator'
+// import { Role } from 'src/enums/role.enum'
 import { RoleGuard } from 'src/guards/role.guard';
 import { StockService } from './stock.service';
 import { CreateStockDTO } from './dto/CreateStockDTO';
@@ -40,8 +42,13 @@ export class StockController {
   async readOne(@ParamId() id) {
     return this.stockService.show(id);
   }
+
+  // @Get('search')
+  // async search(@Query() search: { query: string }) {
+  //   return this.stockService.search(search.query)
+  // }
   @Get('filtered-stocks/:searchString')
-  async getFilteredStock(
+  async getFilteredStocks(
     @Param('searchString') searchString: string,
   ): Promise<Stock[]> {
     return this.stockService.getFilteredStocks(searchString);

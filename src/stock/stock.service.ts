@@ -10,55 +10,54 @@ import { Stock } from '@prisma/client';
 export class StockService {
   constructor(private prisma: PrismaService) {}
 
-  // Criação de um novo item de estoque
   async create(data: CreateStockDTO) {
-    const { ...stockData } = data;
-
-    try {
-      const createdStock = await this.prisma.stock.create({
-        data: {
-          ...stockData,
-        },
-      });
-      return createdStock;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Listar todos os itens de estoque
-  async list() {
-    const stockDetails = await this.prisma.stock.findMany();
-    return stockDetails;
-  }
-
-  // Detalhar um item de estoque específico
-  async show(id_patrimonio: number) {
-    await this.exists(id_patrimonio);
-
-    return this.prisma.stock.findUnique({
-      where: { id_patrimonio }, // Usando id_patrimonio como chave primária
+    return this.prisma.stock.create({
+      data,
     });
   }
 
-  // Buscar itens de estoque filtrados por número de patrimônio
-  async getFilteredStocks(searchString: string): Promise<Stock[]> {
-    return this.prisma.stock.findMany({
+  async list() {
+    return this.prisma.stock.findMany();
+  }
+
+  async show(id: number) {
+    await this.exists(id);
+
+    return this.prisma.stock.findUnique({
       where: {
-        OR: [
-          {
-            numero_patrimonio: {
-              contains: searchString,
-            },
-          },
-        ],
+        id,
       },
     });
   }
 
-  // Atualizar um item de estoque (completamente)
+  // async search(query: string) {
+  //   return this.prisma
+  //     .$queryRaw`SELECT * FROM stocks WHERE name LIKE '%${query}%';`
+  // }
+
+  // async search(query: string) {
+  //   return this.prisma.stocks.findMany({
+  //     where: {
+  //       name: {
+  //         contains: query
+  //       }
+  //     }
+  //   })
+  // }
+  async getFilteredStocks(searchString: string): Promise<Stock[]> {
+    // Tenta converter a string de pesquisa para número
+    const searchNumber = parseInt(searchString, 10);
+
+    // Se for um número válido, busca por id_produto
+    return this.prisma.stock.findMany({
+      where: {
+        id_produto: searchNumber || undefined, // Se searchNumber for válido, usará como filtro
+      },
+    });
+  }
+
   async update(
-    id_patrimonio: number,
+    id: number,
     {
       id_produto,
       numero_patrimonio,
@@ -68,7 +67,7 @@ export class StockService {
       observacoes,
     }: UpdatePutStockDTO,
   ) {
-    await this.exists(id_patrimonio);
+    await this.exists(id);
 
     return this.prisma.stock.update({
       data: {
@@ -79,13 +78,14 @@ export class StockService {
         status,
         observacoes,
       },
-      where: { id_patrimonio }, // Usando id_patrimonio como chave primária
+      where: {
+        id,
+      },
     });
   }
 
-  // Atualizar parcialmente um item de estoque
   async updatePartial(
-    id_patrimonio: number,
+    id: number,
     {
       id_produto,
       numero_patrimonio,
@@ -95,7 +95,7 @@ export class StockService {
       observacoes,
     }: UpdatePatchStockDTO,
   ) {
-    await this.exists(id_patrimonio);
+    await this.exists(id);
 
     const data: any = {};
 
@@ -105,32 +105,33 @@ export class StockService {
     if (valor_pago) data.valor_pago = valor_pago;
     if (status) data.status = status;
     if (observacoes) data.observacoes = observacoes;
-
     return this.prisma.stock.update({
       data,
-      where: { id_patrimonio }, // Usando id_patrimonio como chave primária
+      where: {
+        id,
+      },
     });
   }
 
-  // Deletar um item de estoque
-  async delete(id_patrimonio: number) {
-    await this.exists(id_patrimonio);
+  async delete(id: number) {
+    await this.exists(id);
 
     return this.prisma.stock.delete({
-      where: { id_patrimonio }, // Usando id_patrimonio como chave primária
+      where: {
+        id,
+      },
     });
   }
 
-  // Verificar se o item de estoque existe
-  private async exists(id_patrimonio: number) {
-    const stock = await this.prisma.stock.findUnique({
-      where: { id_patrimonio }, // Usando id_patrimonio para verificar a existência
-    });
-
-    if (!stock) {
-      throw new NotFoundException(
-        `Item de estoque com o id_patrimonio ${id_patrimonio} não encontrado.`,
-      );
+  async exists(id: number) {
+    if (
+      !(await this.prisma.stock.count({
+        where: {
+          id,
+        },
+      }))
+    ) {
+      throw new NotFoundException(`Cliente/Fornecedor ${id} não existe.`);
     }
   }
 }

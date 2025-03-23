@@ -33,7 +33,7 @@ export class LeaseService {
 
     // Criação dos itens da locação
     const leaseItemsData = createLeaseDTO.leaseItems.map((item) => ({
-      id_patrimonio: item.id_patrimonio,
+      id: item.id,
       valor_unit_diario: item.valor_unit_diario,
       valor_unit_semanal: item.valor_unit_semanal,
       valor_unit_mensal: item.valor_unit_mensal,
