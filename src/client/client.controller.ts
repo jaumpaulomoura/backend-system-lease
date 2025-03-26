@@ -28,6 +28,7 @@ export class ClientController {
 
   @Post()
   async create(@Body() data: CreateClientDTO) {
+    // console.log('Dados recebidos:', data);
     return this.clientService.create(data);
   }
 

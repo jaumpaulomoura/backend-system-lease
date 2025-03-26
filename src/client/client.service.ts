@@ -10,11 +10,38 @@ import { Client } from '@prisma/client';
 export class ClientService {
   constructor(private prisma: PrismaService) {}
 
-  // Criar um novo cliente
   async create(data: CreateClientDTO) {
-    return this.prisma.client.create({
-      data: { ...data },
-    });
+    try {
+      console.log('Criando cliente com os dados:', data);
+      const createdClient = await this.prisma.client.create({
+        data: {
+          name: data.name,
+          cpf_cnpj: data.cpf_cnpj,
+          telefone: data.telefone,
+          email: data.email,
+          rua: data.rua,
+          numero: data.numero,
+          complemento: data.complemento,
+          bairro: data.bairro,
+          cidade: data.cidade,
+          estado: data.estado,
+          cep: data.cep,
+          rua_cobranca: data.rua_cobranca,
+          numero_cobranca: data.numero_cobranca,
+          complemento_cobranca: data.complemento_cobranca,
+          bairro_cobranca: data.bairro_cobranca,
+          cidade_cobranca: data.cidade_cobranca,
+          estado_cobranca: data.estado_cobranca,
+          cep_cobranca: data.cep_cobranca,
+        },
+      });
+
+      console.log('Cliente criado com sucesso:', createdClient);
+      return createdClient;
+    } catch (error) {
+      console.error('Erro ao criar cliente:', error);
+      throw new Error('Erro ao criar cliente');
+    }
   }
 
   // Listar todos os clientes
