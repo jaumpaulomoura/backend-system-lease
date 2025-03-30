@@ -2,8 +2,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateLeaseDTO } from './dto/CreateLeaseDTO';
-import { Lease } from '@prisma/client';
+import { Lease, Prisma } from '@prisma/client';
+// import { UpdateLeaseItemDto } from './dto/createLeaseItensDTO';
 import { UpdatePatchLeaseDTO } from './dto/update-patch-lease.dto';
+// import { UpdatePatchLeaseDTO } from './dto/update-patch-lease.dto';
 
 @Injectable()
 export class LeaseService {
@@ -22,18 +24,18 @@ export class LeaseService {
   async create(createLeaseDTO: CreateLeaseDTO): Promise<Lease> {
     // Verificar se o cliente existe
     const cliente = await this.prisma.client.findUnique({
-      where: { id: createLeaseDTO.id_cliente },
+      where: { id: createLeaseDTO.cliente_id },
     });
 
     if (!cliente) {
       throw new NotFoundException(
-        `Cliente com ID ${createLeaseDTO.id_cliente} não encontrado.`,
+        `Cliente com ID ${createLeaseDTO.cliente_id} não encontrado.`,
       );
     }
 
     // Criação dos itens da locação
     const leaseItemsData = createLeaseDTO.leaseItems.map((item) => ({
-      id: item.id,
+      id_patrimonio: item.id_patrimonio,
       valor_unit_diario: item.valor_unit_diario,
       valor_unit_semanal: item.valor_unit_semanal,
       valor_unit_mensal: item.valor_unit_mensal,
@@ -47,7 +49,7 @@ export class LeaseService {
     // Criação da locação com os itens
     const lease = await this.prisma.lease.create({
       data: {
-        id_cliente: createLeaseDTO.id_cliente,
+        cliente_id: createLeaseDTO.cliente_id,
         rua_locacao: createLeaseDTO.rua_locacao,
         numero_locacao: createLeaseDTO.numero_locacao,
         complemento_locacao: createLeaseDTO.complemento_locacao,
@@ -62,7 +64,7 @@ export class LeaseService {
         status: createLeaseDTO.status,
         observacoes: createLeaseDTO.observacoes,
         leaseItems: {
-          create: leaseItemsData, // Relacionamento com os itens
+          create: leaseItemsData,
         },
       },
       include: {
@@ -100,15 +102,39 @@ export class LeaseService {
   }
 
   async update(id: number, data: any) {
-    await this.exists(id);
-    return this.prisma.lease.update({
-      data,
-      where: {
-        id_locacao: id,
+    console.log('\n=== INÍCIO DA ATUALIZAÇÃO ===');
+    console.log('Data recebida para devolução real:', data.data_real_devolucao);
+
+    // Verifica se a data foi realmente fornecida para atualização
+    if (typeof data.data_real_devolucao !== 'undefined') {
+      console.log('Atualização explícita de data_real_devolucao solicitada');
+
+      // Converte para Date e valida
+      const novaData = new Date(data.data_real_devolucao);
+      if (isNaN(novaData.getTime())) {
+        throw new Error('Data de devolução real inválida');
+      }
+
+      // Mantém o valor exato fornecido
+      data.data_real_devolucao = novaData;
+    }
+
+    const result = await this.prisma.lease.update({
+      where: { id_locacao: id },
+      data: {
+        ...data,
+        // Garante que updatedAt será atualizado
+        updatedAt: new Date(),
       },
     });
-  }
 
+    console.log('Resultado da atualização:', {
+      data_real_devolucao: result.data_real_devolucao,
+      updatedAt: result.updatedAt,
+    });
+
+    return result;
+  }
   async delete(id: number) {
     const lease = await this.prisma.lease.findUnique({
       where: { id_locacao: id },
@@ -158,28 +184,81 @@ export class LeaseService {
       },
     });
   }
-  async updatePartial(
-    id: number,
-    { status, observacoes }: UpdatePatchLeaseDTO,
-  ) {
-    await this.exists(id);
 
-    // Dados a serem atualizados (somente os campos não nulos)
-    const data: any = {};
+  async updatePartial(id_locacao: number, data: UpdatePatchLeaseDTO) {
+    await this.exists(id_locacao);
 
-    if (status) {
-      data.status = status;
-    }
-
-    if (observacoes) {
-      data.observacoes = observacoes;
-    }
+    const prismaData: Prisma.LeaseUpdateInput = {
+      ...data,
+      cliente: data.cliente_id
+        ? { connect: { id: data.cliente_id } }
+        : undefined, // Corrigindo a relação do cliente
+      leaseItems: data.leaseItems
+        ? {
+            deleteMany: {}, // Remove os itens antigos
+            create: data.leaseItems.map((item) => ({
+              id_patrimonio: item.id_patrimonio,
+              valor_unit_diario: item.valor_unit_diario,
+              valor_unit_semanal: item.valor_unit_semanal,
+              valor_unit_mensal: item.valor_unit_mensal,
+              valor_unit_anual: item.valor_unit_anual,
+              valor_negociado_diario: item.valor_negociado_diario,
+              valor_negociado_semanal: item.valor_negociado_semanal,
+              valor_negociado_mensal: item.valor_negociado_mensal,
+              valor_negociado_anual: item.valor_negociado_anual,
+            })),
+          }
+        : undefined,
+    };
 
     return this.prisma.lease.update({
-      where: {
-        id_locacao: id,
-      },
-      data: data,
+      data: prismaData,
+      where: { id_locacao },
     });
   }
+
+  // async updatePartial(id: number, updateData: UpdatePatchLeaseDTO) {
+  //   console.log('[updatePartial] Iniciando atualização para ID:', id);
+  //   console.log(
+  //     '[updatePartial] Dados recebidos:',
+  //     JSON.stringify(updateData, null, 2),
+  //   );
+
+  //   await this.exists(id);
+
+  //   // Filtra campos undefined e mostra no log
+  //   const data = Object.fromEntries(
+  //     Object.entries(updateData).filter(([key, value]) => {
+  //       if (value !== undefined) {
+  //         console.log(`[updatePartial] Campo '${key}' será atualizado:`, value);
+  //         return true;
+  //       }
+  //       console.log(`[updatePartial] Campo '${key}' ignorado (undefined)`);
+  //       return false;
+  //     }),
+  //   );
+
+  //   console.log(
+  //     '[updatePartial] Dados que serão enviados para atualização:',
+  //     data,
+  //   );
+
+  //   try {
+  //     const result = await this.prisma.lease.update({
+  //       where: {
+  //         id_locacao: id,
+  //       },
+  //       data: data,
+  //     });
+
+  //     console.log(
+  //       '[updatePartial] Atualização bem-sucedida. Resultado:',
+  //       result,
+  //     );
+  //     return result;
+  //   } catch (error) {
+  //     console.error('[updatePartial] Erro na atualização:', error);
+  //     throw error;
+  //   }
+  // }
 }

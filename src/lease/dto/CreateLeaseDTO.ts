@@ -15,7 +15,7 @@ import { CreateLeaseItemDto } from './createLeaseItensDTO';
 export class CreateLeaseDTO {
   @IsNotEmpty()
   @IsInt()
-  id_cliente: number;
+  cliente_id?: number;
 
   @IsNotEmpty()
   @IsString()

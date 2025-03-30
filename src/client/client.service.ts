@@ -128,10 +128,13 @@ export class ClientService {
 
   // Deletar um cliente
   async delete(id: number) {
-    await this.exists(id);
-    return this.prisma.client.delete({ where: { id } });
-  }
+    await this.exists(id); // Certifica-se de que o produto existe antes de deletar
 
+    // Agora é seguro deletar o produto
+    return this.prisma.client.delete({
+      where: { id },
+    });
+  }
   // Verificar se o cliente existe
   private async exists(id: number) {
     const client = await this.prisma.client.findUnique({ where: { id } });

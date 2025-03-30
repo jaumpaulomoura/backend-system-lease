@@ -2,13 +2,13 @@
 import { IsNotEmpty, IsInt, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateLeaseItemDto {
-  @IsNotEmpty()
-  @IsInt()
-  id_locacao: number;
+  // @IsNotEmpty()
+  // @IsInt()
+  // id_locacao: number;
 
   @IsNotEmpty()
   @IsInt()
-  id: number;
+  id_patrimonio: number;
 
   @IsNotEmpty()
   @IsNumber()
