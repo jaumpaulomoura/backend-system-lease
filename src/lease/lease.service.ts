@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+// import { Stock } from '@prisma/client';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateLeaseDTO } from './dto/CreateLeaseDTO';
@@ -78,8 +79,16 @@ export class LeaseService {
   async list() {
     const leases = await this.prisma.lease.findMany({
       include: {
-        leaseItems: true,
-        cliente: true, // Incluindo cliente para os dados completos
+        leaseItems: {
+          include: {
+            patrimonio: {
+              include: {
+                produto: true, // Inclui informações do produto relacionado ao estoque
+              },
+            },
+          },
+        },
+        cliente: true,
       },
     });
     return leases;

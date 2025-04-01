@@ -17,9 +17,12 @@ export class StockService {
   }
 
   async list() {
-    return this.prisma.stock.findMany();
+    return this.prisma.stock.findMany({
+      include: {
+        produto: true,
+      },
+    });
   }
-
   async show(id: number) {
     await this.exists(id);
 
