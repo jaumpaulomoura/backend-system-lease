@@ -27,10 +27,32 @@ export class ProductService {
     }
   }
 
-  // Listar todos os produtos
   async list() {
-    const productDetails = await this.prisma.product.findMany();
-    return productDetails;
+    const products = await this.prisma.product.findMany({
+      include: {
+        stock: {
+          select: {
+            id: true,
+            numero_patrimonio: true,
+            status: true,
+            valor_pago: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    return products.map((product) => ({
+      ...product,
+      daily_value: product.daily_value?.toString() || null,
+      weekly_value: product.weekly_value?.toString() || null,
+      monthly_value: product.monthly_value?.toString() || null,
+      annual_value: product.annual_value?.toString() || null,
+      stock: product.stock.map((item) => ({
+        ...item,
+        valor_pago: item.valor_pago.toString(),
+      })),
+    }));
   }
 
   // Detalhar um produto específico

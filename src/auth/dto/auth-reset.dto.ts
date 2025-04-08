@@ -1,11 +1,12 @@
-import { IsJWT, IsStrongPassword } from 'class-validator'
+/* eslint-disable prettier/prettier */
+import { IsJWT, IsStrongPassword } from 'class-validator';
 
 export class AuthResetDTO {
   @IsStrongPassword({
-    minLength: 6
+    minLength: 6,
   })
-  password: string
+  password: string;
 
   @IsJWT()
-  token: string
+  token: string;
 }

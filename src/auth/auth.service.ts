@@ -65,17 +65,17 @@ export class AuthService {
 
   async login(email: string, password: string) {
     const user = await this.prisma.user.findFirst({
-      where: {
-        email,
-      },
+      where: { email },
     });
 
     if (!user) {
-      throw new UnauthorizedException('E-mail e/ou senha incorretos.');
+      throw new UnauthorizedException('Usuário não encontrado.');
     }
 
-    if (!(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('E-mail e/ou senha incorretos.');
+    const passwordValid = await bcrypt.compare(password, user.password);
+
+    if (!passwordValid) {
+      throw new UnauthorizedException('Senha incorreta.');
     }
 
     return this.createToken(user);
@@ -96,19 +96,26 @@ export class AuthService {
   }
 
   async reset(password: string, token: string) {
-    //TO DO: validar o token...
-    const id = 0;
+    try {
+      // Verify the token and extract user ID
+      const { sub: id } = this.jwtService.verify(token, {
+        issuer: this.issuer,
+        audience: this.audience,
+      });
 
-    const user = await this.prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        password,
-      },
-    });
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    return this.createToken(user);
+      // Update user password
+      const user = await this.prisma.user.update({
+        where: { id: Number(id) },
+        data: { password: hashedPassword },
+      });
+
+      return this.createToken(user);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
   }
 
   async register(data: AuthRegisterDTO) {
