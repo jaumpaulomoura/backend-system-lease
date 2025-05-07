@@ -28,6 +28,7 @@ export class LeaseController {
 
   @Post()
   async create(@Body() data: CreateLeaseDTO) {
+    console.log('📦 Dados recebidos no controller:', data);
     return this.leaseService.create(data);
   }
 

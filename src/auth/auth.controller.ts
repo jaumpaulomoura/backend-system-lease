@@ -1,5 +1,12 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UseGuards,
+  HttpCode,
+  Get,
+} from '@nestjs/common';
 import { AuthLoginDTO } from './dto/auth-login.dto';
 import { AuthRegisterDTO } from './dto/auth-register.dto';
 import { AuthForgetDTO } from './dto/auth-forget.dto';
@@ -23,18 +30,29 @@ export class AuthController {
   }
 
   @Post('forget')
+  @HttpCode(200) // Retorna status 200 mesmo se o email não existir (por segurança)
   async forget(@Body() { email }: AuthForgetDTO) {
-    return this.authService.forget(email);
+    console.log('Requisição recebida no /forget com email:', email);
+    const result = await this.authService.forget(email);
+    console.log('Resultado do authService.forget:', result);
+    return result;
   }
+
   @Post('reset')
-  async reset(@Body() body: AuthResetDTO) {
-    console.log('BODY COMPLETO:', body);
-    return this.authService.reset(body.password, body.token);
+  @HttpCode(200)
+  async reset(@Body() { password, token }: AuthResetDTO) {
+    return this.authService.reset(password, token);
   }
 
   @UseGuards(AuthGuard)
   @Post('me')
   async me(@User() user) {
     return { user };
+  }
+
+  @Get('test-email')
+  async testEmail() {
+    await this.authService.sendTestEmail();
+    return { message: 'E-mail de teste enviado!' };
   }
 }

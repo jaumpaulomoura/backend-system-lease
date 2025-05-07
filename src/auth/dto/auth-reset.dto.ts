@@ -1,12 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { IsJWT, IsStrongPassword } from 'class-validator';
+import { IsString, MinLength } from 'class-validator';
 
 export class AuthResetDTO {
-  @IsStrongPassword({
-    minLength: 6,
-  })
+  @IsString()
+  @MinLength(6)
   password: string;
 
-  @IsJWT()
+  @IsString()
   token: string;
 }

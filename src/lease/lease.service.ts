@@ -46,7 +46,8 @@ export class LeaseService {
       valor_negociado_mensal: item.valor_negociado_mensal,
       valor_negociado_anual: item.valor_negociado_anual,
     }));
-
+    console.log('Data de pagamento recebida:', createLeaseDTO.data_pagamento);
+    console.log('Tipo:', typeof createLeaseDTO.data_pagamento);
     // Criação da locação com os itens
     const lease = await this.prisma.lease.create({
       data: {
@@ -61,7 +62,9 @@ export class LeaseService {
         data_inicio: createLeaseDTO.data_inicio,
         data_prevista_devolucao: createLeaseDTO.data_prevista_devolucao,
         data_real_devolucao: createLeaseDTO.data_real_devolucao,
+        data_pagamento: createLeaseDTO.data_pagamento,
         valor_total: createLeaseDTO.valor_total,
+        valor_multa: createLeaseDTO.valor_multa,
         status: createLeaseDTO.status,
         observacoes: createLeaseDTO.observacoes,
         leaseItems: {
@@ -189,11 +192,11 @@ export class LeaseService {
         ],
       },
       include: {
+        cliente: true,
         leaseItems: true,
       },
     });
   }
-
   async updatePartial(id_locacao: number, data: UpdatePatchLeaseDTO) {
     await this.exists(id_locacao);
 
@@ -201,7 +204,7 @@ export class LeaseService {
       ...data,
       cliente: data.cliente_id
         ? { connect: { id: data.cliente_id } }
-        : undefined, // Corrigindo a relação do cliente
+        : undefined,
       leaseItems: data.leaseItems
         ? {
             deleteMany: {}, // Remove os itens antigos

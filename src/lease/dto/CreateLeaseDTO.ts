@@ -60,9 +60,17 @@ export class CreateLeaseDTO {
   @IsDate()
   data_real_devolucao?: Date;
 
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  data_pagamento?: Date;
+
   @IsNotEmpty()
   @IsNumber()
   valor_total: number;
+  @IsNotEmpty()
+  @IsNumber()
+  valor_multa: number;
 
   @IsNotEmpty()
   @IsString()
