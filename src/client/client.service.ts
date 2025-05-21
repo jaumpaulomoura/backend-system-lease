@@ -1,5 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateClientDTO } from './dto/CreateClientDTO';
 import { UpdatePutClientDTO } from './dto/update-put-client.dto';
@@ -38,12 +42,25 @@ export class ClientService {
 
       console.log('Cliente criado com sucesso:', createdClient);
       return createdClient;
-    } catch (error) {
+    } catch (error: unknown) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        (error as any).code === 'P2002'
+      ) {
+        const prismaError = error as { meta?: { target?: string } };
+        const target = prismaError.meta?.target;
+        if (typeof target === 'string' && target.includes('cpf_cnpj')) {
+          console.error('CPF/CNPJ já está em uso.');
+          throw new BadRequestException('CPF/CNPJ já está em uso.');
+        }
+      }
+
       console.error('Erro ao criar cliente:', error);
-      throw new Error('Erro ao criar cliente');
+      throw new BadRequestException('Erro ao criar cliente');
     }
   }
-
   // Listar todos os clientes
   async list() {
     return this.prisma.client.findMany();
