@@ -65,6 +65,7 @@ export class LeaseService {
         data_pagamento: createLeaseDTO.data_pagamento,
         valor_total: createLeaseDTO.valor_total,
         valor_multa: createLeaseDTO.valor_multa,
+        valor_frete: createLeaseDTO.valor_frete,
         status: createLeaseDTO.status,
         observacoes: createLeaseDTO.observacoes,
         leaseItems: {

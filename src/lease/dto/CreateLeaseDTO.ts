@@ -72,6 +72,10 @@ export class CreateLeaseDTO {
   @IsNumber()
   valor_multa: number;
 
+  @IsOptional()
+  @IsNumber()
+  valor_frete?: number;
+
   @IsNotEmpty()
   @IsString()
   status: string;
